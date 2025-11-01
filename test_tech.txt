@@ -1,0 +1,50 @@
+technologies = {
+
+	@1918 = 0
+	@1934 = 2
+	@1936 = 4
+	@1937 = 6
+	@1938 = 8
+
+	@SUPP = 6
+	@EG = 7
+	@CMB_ENG = 9
+
+	tech_support = {
+		research_cost = 1.0
+		start_year = 1918
+		folder = {
+			name = support_folder
+			position = { x = @SUPP y = @1918 }
+		}
+		categories = {
+			support_tech
+		}
+	}
+
+	tech_engineers = {
+		research_cost = 1.2
+		start_year = 1934
+		folder = {
+			name = support_folder
+			position = { x = @EG y = @1934 }
+		}
+		categories = {
+			support_tech
+			engineers_tech
+		}
+	}
+
+	tech_combat_engineers = {
+		research_cost = 1.2
+		start_year = 1936
+		folder = {
+			name = support_folder
+			position = { x = @CMB_ENG y = @1936 }
+		}
+		categories = {
+			support_tech
+			engineers_tech
+		}
+	}
+}
