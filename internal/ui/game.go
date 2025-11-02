@@ -2,25 +2,30 @@ package ui
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/shinomontaz/hoi4_visual_modder/internal/app"
 	"github.com/shinomontaz/hoi4_visual_modder/internal/ui/scenes"
 )
 
 // Game represents the main game instance
 type Game struct {
 	sceneManager *scenes.SceneManager
+	state        *app.State
 	width        int
 	height       int
 }
 
 // NewGame creates a new Game instance
 func NewGame() *Game {
+	state := app.NewState()
+	
 	game := &Game{
+		state:  state,
 		width:  1280,
 		height: 720,
 	}
 	
 	// Initialize scene manager with startup scene
-	game.sceneManager = scenes.NewSceneManager()
+	game.sceneManager = scenes.NewSceneManager(state)
 	
 	return game
 }

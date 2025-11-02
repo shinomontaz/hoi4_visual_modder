@@ -2,6 +2,7 @@ package scenes
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/shinomontaz/hoi4_visual_modder/internal/app"
 )
 
 // Scene represents a screen/state in the application
@@ -17,6 +18,7 @@ type SceneType int
 
 const (
 	SceneStartup SceneType = iota
+	SceneFileViewer
 	SceneFocusEditor
 	SceneTechEditor
 )
@@ -25,16 +27,19 @@ const (
 type SceneManager struct {
 	currentScene Scene
 	scenes       map[SceneType]Scene
+	state        *app.State
 }
 
 // NewSceneManager creates a new SceneManager
-func NewSceneManager() *SceneManager {
+func NewSceneManager(state *app.State) *SceneManager {
 	sm := &SceneManager{
 		scenes: make(map[SceneType]Scene),
+		state:  state,
 	}
 	
 	// Register scenes
-	sm.scenes[SceneStartup] = NewStartupScene(sm)
+	sm.scenes[SceneStartup] = NewStartupScene(sm, state)
+	sm.scenes[SceneFileViewer] = NewFileViewerScene(sm, state)
 	// TODO: Add other scenes when implemented
 	
 	// Start with startup scene

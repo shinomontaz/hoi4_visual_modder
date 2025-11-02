@@ -7,8 +7,16 @@ import (
 // State represents the application state
 type State struct {
 	// Project information
-	ModPath     string
-	CurrentMode Mode
+	ModPath          string
+	BasePath         string   // Root directory of the mod
+	SelectedFilePath string   // Full path to selected file
+	FileType         FileType // Type of selected file
+	CurrentMode      Mode
+	
+	// File browser state
+	AvailableFiles []FileInfo
+	SelectedFile   *FileInfo
+	FileContent    string
 	
 	// Loaded data
 	FocusTree      *domain.FocusTree
@@ -58,4 +66,42 @@ func (s *State) LoadFocusTree(tree *domain.FocusTree) {
 func (s *State) LoadTechnologyTree(tree *domain.TechnologyTree) {
 	s.TechnologyTree = tree
 	s.CurrentMode = ModeTechnology
+}
+
+// SetAvailableFiles sets the list of available files
+func (s *State) SetAvailableFiles(files []FileInfo) {
+	s.AvailableFiles = files
+}
+
+// SelectFile selects a file and loads its content
+func (s *State) SelectFile(file *FileInfo) {
+	s.SelectedFile = file
+}
+
+// SetFileContent sets the content of the selected file
+func (s *State) SetFileContent(content string) {
+	s.FileContent = content
+}
+
+// SetBasePath sets the base path of the mod
+func (s *State) SetBasePath(path string) {
+	s.BasePath = path
+}
+
+// LoadFile loads a file and sets all related state
+func (s *State) LoadFile(filePath string) error {
+	basePath, fileType, content, err := LoadModFile(filePath)
+	if err != nil {
+		return err
+	}
+	
+	s.SelectedFilePath = filePath
+	s.BasePath = basePath
+	s.FileType = fileType
+	s.FileContent = content
+	
+	// Also set ModPath for backwards compatibility
+	s.ModPath = basePath
+	
+	return nil
 }

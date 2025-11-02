@@ -1,0 +1,209 @@
+# Windsurf Cascade AI - Project Instructions
+
+## 🚀 Automatic Context Loading
+
+**CRITICAL: Read these files IMMEDIATELY at the start of EVERY conversation, before responding to user:**
+
+1. **_CONTEXT.md** - Read this FIRST to understand project overview, goals, and scope
+2. **_PLAN.md** - Read this SECOND for detailed current state, decisions, and history
+
+**Do NOT wait for user to ask you to read these files. Do it automatically as part of initialization.**
+
+After reading, you should understand:
+- What this project is and its goals
+- Current work focus and status
+- Past technical decisions and their rationale
+- Established patterns and standards
+- Known issues and technical debt
+
+## 📖 How to Use Context Files
+
+### At Start of Every Session
+
+**Always do this BEFORE responding to the first user message:**
+
+```
+Step 1: Read _CONTEXT.md completely
+Step 1: Read _PLAN.md completely
+Step 2: Acknowledge context loaded: "Context loaded from _PLAN.md and _CONTEXT.md. Ready to work!"
+Step 3: Respond to user's message with full context awareness
+```
+
+### During Work
+
+**When making suggestions or decisions:**
+- ✅ Follow patterns from **Implementation Patterns & Standards** section
+- ✅ Respect decisions from **Architecture & Technical Decisions** section
+- ✅ Avoid items listed in **Anti-patterns to Avoid** section
+- ✅ Be aware of **Known Issues** and **Technical Debt**
+- ✅ Check **Current Focus** to understand what's most important now
+
+**When encountering conflicts:**
+- If your suggestion conflicts with documented decision → explain conflict and ask if decision should be reconsidered
+- If user requests something against established pattern → point it out and confirm they want to deviate
+
+### At End of Session
+
+**ALWAYS offer to update _CONTEXT.md when work session concludes.**
+
+When user says phrases like:
+- "that's all for today"
+- "let's stop here"
+- "thanks, that's enough"
+- "I'm done"
+- Or after completing a significant piece of work
+
+**Automatically respond:**
+"Let me update _CONTEXT.md with today's work. I'll add:
+- Development Log entry for [date]
+- [Summary of what was done]
+- [Any new decisions made]
+- [Update to Current Focus]
+
+Should I proceed with the update?"
+
+## 📝 Updating _CONTEXT.md
+
+### When to Update
+
+Update _CONTEXT.md when:
+- ✅ User explicitly asks to update context
+- ✅ Session is concluding (offer proactively)
+- ✅ Major technical decision is made
+- ✅ New pattern is established
+- ✅ Significant work is completed
+- ✅ Architecture changes
+
+### What to Update
+
+**Development Log (ALWAYS):**
+```markdown
+### [YYYY-MM-DD] - [Brief Title of Session]
+**Work Done:**
+- [Specific accomplishment 1]
+- [Specific accomplishment 2]
+
+**Discoveries:**
+- [Important learning or finding]
+
+**Changes:**
+- [Any changes to approach, patterns, architecture]
+
+**Next Steps:**
+- [What should be done next]
+```
+
+**Technical Decisions (WHEN APPLICABLE):**
+```markdown
+#### [YYYY-MM-DD] - [Decision Title]
+**Decision:** [Clear statement of what was decided]
+**Rationale:** [Why this makes sense - include trade-offs considered]
+**Alternatives Considered:** [What other options were evaluated and why rejected]
+**Impact:** [How this affects the project going forward]
+**Status:** Active
+```
+
+**Implementation Patterns (WHEN NEW PATTERN ESTABLISHED):**
+```markdown
+- **[Pattern Name]:** [Description]
+  - **When to use:** [Context]
+  - **Example:** [Code example or explanation]
+```
+
+**Current Focus (IF CHANGED):**
+- Update task checkboxes
+- Move completed items to Project Status → Completed
+- Add new focus items
+
+**Project Status:**
+- Move completed work from "In Progress" to "Completed"
+- Update "In Progress" with current state
+- Adjust "Planned Next" based on progress
+
+**Last Updated timestamp:**
+- Always update the timestamp at the top
+
+### Update Format Rules
+
+1. **Be Specific:** Write what actually happened, not vague summaries
+   - ❌ "Worked on authentication"
+   - ✅ "Implemented JWT token generation and validation middleware"
+
+2. **Document Why, Not Just What:**
+   - ❌ "Used Redux"
+   - ✅ "Chose Redux for state management because app has complex cross-component state sharing (shopping cart + user preferences)"
+
+3. **Include Context for Future:**
+   - ❌ "Fixed the bug"
+   - ✅ "Fixed race condition in async data loading by adding loading state checks before updating UI"
+
+4. **Keep Current Focus Current:**
+   - Mark completed tasks with [x]
+   - Remove outdated tasks
+   - Add new priorities
+
+## 🎯 Response Guidelines
+
+### First Message in Session
+
+**Your first response should ALWAYS:**
+1. Silently read projectBrief.md and PROJECT_CONTEXT.md (don't show the reading process)
+2. Start with: "Context loaded. [Brief 1-sentence acknowledgment of current focus]"
+3. Then respond to user's actual message
+
+**Example:**
+```
+User: "Let's add user authentication"
+
+You: "Context loaded. I see we're working on the web dashboard project and currently focusing on core features.
+
+For user authentication, based on our established patterns, I suggest..."
+```
+
+### During Conversation
+
+- Reference context naturally when relevant
+  - "Based on our decision to use JWT tokens..."
+  - "Following our established error handling pattern..."
+  - "I notice from the context that we've already encountered..."
+
+- Point out conflicts with documented decisions
+  - "This would conflict with our earlier decision to use REST API. Should we reconsider that decision?"
+
+- Suggest updates to context when appropriate
+  - "This seems like an important decision. Should I add it to Technical Decisions?"
+
+### Types of Responses
+
+**When user asks about project state:**
+- Reference PROJECT_CONTEXT.md directly
+- Quote relevant sections
+- Summarize current status
+
+**When user asks for implementation help:**
+- Check Implementation Patterns first
+- Follow established patterns
+- Reference past decisions that inform the approach
+
+**When user proposes new approach:**
+- Check if it conflicts with documented patterns/decisions
+- If conflict: point it out and discuss
+- If new pattern: suggest documenting it
+
+## 🔒 Important Rules
+
+### ALWAYS DO:
+✅ Read context files at start of EVERY new conversation
+✅ Follow established patterns and respect documented decisions
+✅ Offer to update _CONTEXT.md at end of session
+✅ Be specific and detailed in context updates
+✅ Document the "why" behind decisions, not just "what"
+✅ Keep Current Focus section accurate and up-to-date
+
+### NEVER DO:
+❌ Wait for user to ask you to read context files
+❌ Suggest approaches that contradict documented decisions without discussion
+❌ Make vague updates like "did some work"
+❌ Forget to update timestamp when updating _CONTEXT.md
+❌ Let completed tasks stay in "In Progress"
+❌ Add technical decisions without explaining rationale and alternatives

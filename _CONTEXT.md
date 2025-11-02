@@ -12,7 +12,7 @@
 - Позволяет редактировать позиции, свойства и связи между элементами
 - Генерирует корректные файлы обратно в формат игры
 
-**Current State:** Phase 1 (MVP) - структура проекта создана, domain модели реализованы, следующий шаг - реализация лексера для парсинга.
+**Current State:** Phase 1 (MVP) - структура проекта создана, domain модели реализованы, native file picker работает, следующий шаг - реализация лексера для парсинга.
 
 ## 🚀 Goals & Objectives
 
@@ -41,10 +41,28 @@
 
 ## 🎨 User Experience
 
-### Workflow
-1. **Запуск** → Выбор каталога мода
-2. **Режим** → Выбор: фокусы или технологии  
-3. **Файл** → Выбор конкретного .txt файла
+### Workflow (Implemented)
+
+**File Selection Flow:**
+```
+Startup Scene
+    ↓ Click "Open File..." or Ctrl+O
+Native File Picker Dialog
+    ↓ Select .txt file from mod
+ModLoader Processing
+    ├─ Detect Base_path (mod root directory)
+    ├─ Validate mod structure (common/, national_focus/, technologies/)
+    ├─ Detect file type (Focus or Technology)
+    └─ Load file content (UTF-8)
+    ↓
+File Viewer Scene
+    └─ Display file metadata and content
+```
+
+**Planned Workflow (Future):**
+1. **Запуск** → Native file picker для выбора файла ✅
+2. **Парсинг** → Лексер и парсер обрабатывают файл
+3. **Визуализация** → Отображение дерева на canvas
 4. **Редактирование** → Визуальная работа с деревом
 5. **Сохранение** → Экспорт в правильном формате
 
@@ -148,6 +166,40 @@
 - **Backup:** Create .bak files before overwriting (atomic: write to .bak, then rename)
 - **Atomic Writes:** Write to temp file first, then rename to target
 - **Error Recovery:** Graceful handling of malformed files with detailed error messages
+
+### Implemented Components
+
+**ModLoader (internal/app/mod_loader.go):**
+- `DetectBasePath(filePath)` - Extracts mod root from file path
+  - Example: `C:\...\mod\MyMod\common\national_focus\file.txt` → `C:\...\mod\MyMod`
+  - Handles Windows drive letters correctly
+- `ValidateModStructure(basePath)` - Validates HOI4 mod directory structure
+  - Checks for `common/` directory
+  - Verifies `national_focus/` or `technologies/` subdirectories exist
+- `DetectFileType(filePath)` - Determines file type (Focus/Technology) from path
+- `LoadModFile(filePath)` - Complete file loading with validation
+
+**UI Components (internal/ui/):**
+- **Button** (components/button.go) - Reusable button with hover/pressed states
+- **StartupScene** (scenes/startup.go) - File picker with native dialog
+  - "Open File..." button (centered)
+  - Ctrl+O keyboard shortcut
+  - Error handling with dialogs
+  - Displays selected file metadata
+- **FileViewerScene** (scenes/file_viewer.go) - Raw file content display
+  - Scrolling with mouse wheel and arrow keys
+  - Visual scrollbar indicator
+  - ESC to return to startup
+  - Shows file type and Base_path
+- **SceneManager** (scenes/scene.go) - Scene switching and state management
+
+**State Management (internal/app/state.go):**
+- Stores: BasePath, SelectedFilePath, FileType, FileContent
+- Methods: LoadFile(), SetBasePath(), SelectFile()
+
+**Dependencies:**
+- `github.com/sqweek/dialog` - Native file picker dialogs (Windows/Linux/Mac)
+- `github.com/hajimehoshi/ebiten/v2` - 2D game engine for GUI
 
 ## 🎯 Anti-patterns to Avoid
 
