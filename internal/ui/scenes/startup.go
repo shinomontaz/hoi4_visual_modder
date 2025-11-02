@@ -69,8 +69,19 @@ func (s *StartupScene) Update() error {
 			return nil
 		}
 		
-		// Success! Switch to file viewer
-		s.manager.SwitchTo(SceneFileViewer)
+		// Success! Switch to appropriate viewer based on file type
+		if s.state.FileType == app.FileTypeTechnology {
+			// Create and switch to tech viewer
+			techViewer := NewTechViewerScene(s.manager, filePath)
+			s.manager.AddScene("tech_viewer", techViewer)
+			s.manager.SwitchToNamed("tech_viewer")
+		} else if s.state.FileType == app.FileTypeFocus {
+			// For now, use file viewer (TODO: create focus viewer)
+			s.manager.SwitchTo(SceneFileViewer)
+		} else {
+			// Unknown type, use file viewer
+			s.manager.SwitchTo(SceneFileViewer)
+		}
 	}
 	
 	return nil

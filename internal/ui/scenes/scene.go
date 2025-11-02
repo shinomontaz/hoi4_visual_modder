@@ -25,16 +25,18 @@ const (
 
 // SceneManager manages scene transitions
 type SceneManager struct {
-	currentScene Scene
-	scenes       map[SceneType]Scene
-	state        *app.State
+	currentScene  Scene
+	scenes        map[SceneType]Scene
+	dynamicScenes map[string]Scene // For dynamically created scenes
+	state         *app.State
 }
 
 // NewSceneManager creates a new SceneManager
 func NewSceneManager(state *app.State) *SceneManager {
 	sm := &SceneManager{
-		scenes: make(map[SceneType]Scene),
-		state:  state,
+		scenes:        make(map[SceneType]Scene),
+		dynamicScenes: make(map[string]Scene),
+		state:         state,
 	}
 	
 	// Register scenes
@@ -63,7 +65,7 @@ func (sm *SceneManager) Draw(screen *ebiten.Image) {
 	}
 }
 
-// SwitchTo switches to a different scene
+// SwitchTo switches to a different scene by SceneType
 func (sm *SceneManager) SwitchTo(sceneType SceneType) {
 	if sm.currentScene != nil {
 		sm.currentScene.OnExit()
@@ -73,6 +75,23 @@ func (sm *SceneManager) SwitchTo(sceneType SceneType) {
 		sm.currentScene = scene
 		sm.currentScene.OnEnter()
 	}
+}
+
+// SwitchToNamed switches to a dynamically created scene by name
+func (sm *SceneManager) SwitchToNamed(name string) {
+	if sm.currentScene != nil {
+		sm.currentScene.OnExit()
+	}
+	
+	if scene, exists := sm.dynamicScenes[name]; exists {
+		sm.currentScene = scene
+		sm.currentScene.OnEnter()
+	}
+}
+
+// AddScene adds a dynamic scene
+func (sm *SceneManager) AddScene(name string, scene Scene) {
+	sm.dynamicScenes[name] = scene
 }
 
 // GetCurrentScene returns the current scene type
