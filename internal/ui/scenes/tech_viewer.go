@@ -20,6 +20,7 @@ type TechViewerScene struct {
 	canvas       *components.Canvas
 	nodes        []*components.Node
 	technologies []*domain.Technology
+	iconLoader   *components.IconLoader
 	
 	// UI state
 	selectedNode *components.Node
@@ -44,6 +45,14 @@ func NewTechViewerScene(manager *SceneManager, filePath string) *TechViewerScene
 		return scene
 	}
 	
+	// Initialize icon loader with base path from manager state
+	if manager.state != nil && manager.state.BasePath != "" {
+		scene.iconLoader = components.NewIconLoader(manager.state.BasePath)
+	} else {
+		// Fallback: try to detect base path from file path
+		scene.iconLoader = components.NewIconLoader(detectBasePath(filePath))
+	}
+	
 	// Create nodes from technologies
 	scene.createNodes()
 	
@@ -53,6 +62,28 @@ func NewTechViewerScene(manager *SceneManager, filePath string) *TechViewerScene
 	}
 	
 	return scene
+}
+
+// detectBasePath tries to extract base path from file path
+func detectBasePath(filePath string) string {
+	// Simple heuristic: find "common" in path and go up one level
+	// Example: C:/mods/mymod/common/technologies/file.txt -> C:/mods/mymod
+	idx := -1
+	for i := len(filePath) - 1; i >= 0; i-- {
+		if filePath[i] == '/' || filePath[i] == '\\' {
+			if idx == -1 {
+				idx = i
+			} else {
+				// Check if this is "common"
+				segment := filePath[idx+1 : i]
+				if segment == "common" {
+					return filePath[:i]
+				}
+				idx = i
+			}
+		}
+	}
+	return ""
 }
 
 // loadTechnologies loads and parses the technology file
@@ -85,6 +116,13 @@ func (s *TechViewerScene) loadTechnologies(filePath string) error {
 func (s *TechViewerScene) createNodes() {
 	for _, tech := range s.technologies {
 		node := components.NewNode(tech.ID, tech.ID, tech.Position.X, tech.Position.Y)
+		
+		// Load icon if icon loader is available
+		if s.iconLoader != nil {
+			// Use tech ID as icon name (standard HOI4 convention)
+			node.Icon = s.iconLoader.LoadTechIcon(tech.ID)
+		}
+		
 		s.nodes = append(s.nodes, node)
 	}
 }

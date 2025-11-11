@@ -138,6 +138,13 @@ File Viewer Scene
 - **Testing:** Unit tests for all parsers and validators
 - **Dependencies:** Minimal external dependencies (only Ebitengine for GUI)
 
+### Planning & Task Management Rules
+- **Linear Planning:** Use only whole numbers for steps (1, 2, 3, etc.)
+- **No Substeps:** Avoid hierarchical numbering (no 1.1, 1.2, 2.1, etc.)
+- **Simple Structure:** Each step should be atomic and independent
+- **Clear Progression:** Steps should follow logical sequence without nesting
+- **Completed Steps:** Keep historical steps as-is (even if they had substeps), only apply new rules to future planning
+
 ### Data Models
 - **Focus Structure:** Matches HOI4 focus block exactly (id, icon, position, prerequisites, etc.)
   - Prerequisites stored as `[][]string` (outer array = AND, inner array = OR)

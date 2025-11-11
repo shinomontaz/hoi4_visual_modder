@@ -21,6 +21,7 @@ type Node struct {
 	Color       color.Color
 	BorderColor color.Color
 	TextColor   color.Color
+	Icon        *ebiten.Image // Icon image (can be nil)
 	
 	// State
 	IsSelected bool
@@ -88,10 +89,60 @@ func (n *Node) Draw(screen *ebiten.Image, canvas *Canvas) {
 	
 	vector.StrokeRect(screen, x, y, scaledWidth, scaledHeight, borderWidth, borderColor, false)
 	
-	// Draw text (only if zoom is reasonable)
+	// Draw icon if available
+	if n.Icon != nil {
+		n.drawIcon(screen, x, y, scaledWidth, scaledHeight, canvas.Zoom)
+	}
+	
+	// Draw text (only if zoom is reasonable and no icon, or below icon)
 	if canvas.Zoom > 0.5 {
 		n.drawText(screen, x, y, scaledWidth, scaledHeight, canvas.Zoom)
 	}
+}
+
+// drawIcon draws the node icon
+func (n *Node) drawIcon(screen *ebiten.Image, x, y, width, height float32, zoom float64) {
+	if n.Icon == nil {
+		return
+	}
+	
+	// Get icon dimensions
+	iconW := float32(n.Icon.Bounds().Dx())
+	iconH := float32(n.Icon.Bounds().Dy())
+	
+	// Calculate scale to fit icon in node (with padding)
+	padding := float32(8 * zoom)
+	maxIconW := width - padding*2
+	maxIconH := height - padding*2
+	
+	scale := float32(1.0)
+	if iconW > maxIconW || iconH > maxIconH {
+		scaleW := maxIconW / iconW
+		scaleH := maxIconH / iconH
+		if scaleW < scaleH {
+			scale = scaleW
+		} else {
+			scale = scaleH
+		}
+	}
+	
+	// Calculate centered position
+	scaledW := iconW * scale
+	scaledH := iconH * scale
+	iconX := x + (width-scaledW)/2
+	iconY := y + (height-scaledH)/2
+	
+	// Draw icon
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(float64(scale), float64(scale))
+	op.GeoM.Translate(float64(iconX), float64(iconY))
+	
+	// Add slight transparency if not selected
+	if !n.IsSelected {
+		op.ColorScale.ScaleAlpha(0.9)
+	}
+	
+	screen.DrawImage(n.Icon, op)
 }
 
 // drawText draws the node text using ebitenutil
@@ -101,17 +152,18 @@ func (n *Node) drawText(screen *ebiten.Image, x, y, width, height float32, zoom 
 		return
 	}
 	
+	// If icon exists, draw text below the icon area
+	textY := y + height - float32(15*zoom)
+	
 	// Calculate text position (approximately centered)
 	// ebitenutil.DebugPrintAt uses a fixed-width font, so we estimate
 	textLen := len(n.Title)
 	charWidth := 6.0 * zoom  // Approximate character width
-	charHeight := 8.0 * zoom // Approximate character height
 	
 	textX := int(x + (width-float32(textLen)*float32(charWidth))/2)
-	textY := int(y + (height-float32(charHeight))/2)
 	
 	// Draw text
-	ebitenutil.DebugPrintAt(screen, n.Title, textX, textY)
+	ebitenutil.DebugPrintAt(screen, n.Title, textX, int(textY))
 }
 
 // Contains checks if a screen point is inside the node

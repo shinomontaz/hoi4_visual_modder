@@ -21,12 +21,38 @@
 - 📄 Test data: test_tech.txt successfully parsed
 
 **What's missing:**
-- ❌ Canvas rendering (grid, nodes, connections)
+- ❌ Icon display on tech/focus nodes
+- ❌ Canvas scroll boundaries
+- ❌ Focus tree viewer scene
+- ❌ Connection lines between nodes
 - ❌ Interactive editor UI
 - ❌ Node dragging and editing
 - ❌ File serialization (writing back to .txt)
 
-### Next Steps
+### Immediate Next Steps (Current Sprint)
+**Goal:** Complete technology tree visualization with icons and boundaries
+
+10. **Add icon display for technology nodes** ← **IN PROGRESS**
+    - ✅ Load .dds icon files from mod folder
+    - ✅ Display icons on nodes
+    - ⏳ Add fallback to game folder for missing icons
+    
+11. **Add game folder path configuration**
+    - Add setting for HOI4 game installation path
+    - Implement fallback icon loading (mod → game → placeholder)
+    - Store game path in config/settings
+    
+12. **Implement canvas scroll boundaries**
+    - Calculate bounds based on node positions
+    - Prevent scrolling into empty space
+    - Add visual indicators for boundaries
+    
+13. **Create focus tree viewer scene**
+    - Duplicate TechViewerScene structure for FocusViewerScene
+    - Integrate FocusParser with viewer
+    - Handle focus-specific rendering (relative positioning)
+
+### Completed Steps
 1. ✅ ~~Create initial project structure~~
 2. ✅ ~~Implement domain models~~
 3. ✅ ~~Implement file browser UI~~
@@ -34,11 +60,17 @@
 5. ✅ ~~Implement Lexer (tokenization)~~
 6. ✅ ~~Implement Parser (AST building)~~
 7. ✅ ~~Create specialized parsers (TechParser, FocusParser)~~
-8. **Implement canvas rendering** ← **NEXT**
-   - Create canvas component with pan & zoom
-   - Render technology/focus nodes
-   - Draw connection lines between nodes
-   - Integrate with parsed data
+8. ✅ ~~Create canvas component with pan & zoom~~
+9. ✅ ~~Render technology nodes on canvas~~
+
+### Future Steps (Backlog)
+13. Add connection lines between nodes (paths/prerequisites)
+14. Implement node hover tooltips
+15. Add node selection and info display
+16. Implement mouse wheel zoom
+17. Implement mouse drag pan
+18. Add properties panel for detailed node info
+19. Implement basic refactoring of shared code
 
 ### Active Work
 - [x] Project structure setup ✅
@@ -87,12 +119,17 @@
     - ✅ Successfully parses test_tech.txt
     - ✅ Correctly identifies 3 tech definitions with positions
     - ✅ Variable resolution works: (6,0), (7,2), (9,4)
-- [ ] **Canvas Rendering** ← **NEXT**
-  - [ ] Create canvas component
-  - [ ] Implement node rendering
-  - [ ] Draw connection lines
-  - [ ] Add pan & zoom
-  - [ ] Integrate with parsed data
+- [x] **Canvas Rendering (Basic)** ✅
+  - ✅ Create canvas component
+  - ✅ Implement node rendering
+  - ✅ Add pan & zoom
+  - ✅ Integrate with parsed data
+  - ✅ TechViewerScene with grid display
+- [ ] **Canvas Enhancement** ← **NEXT**
+  - [ ] Add icon display for nodes
+  - [ ] Implement scroll boundaries
+  - [ ] Draw connection lines (paths)
+  - [ ] Add hover tooltips
 
 ---
 
@@ -127,24 +164,26 @@
   - ✅ File content loading (read UTF-8 text file)
   - ✅ File viewer scene (show raw file content with scrolling)
   - ✅ ModLoader (Base_path detection and validation)
-- [ ] **Paradox Script Parser**
-  - Lexer: tokenize Paradox scripting language
-  - Parser: build AST from tokens
-  - Focus parser: parse `focus_tree` and `focus` blocks
-  - Technology parser: parse `technologies` and tech blocks
-  - Error handling and reporting
-- [ ] **Visual Editor Canvas**
-  - Grid rendering with coordinates
-  - Render nodes as white squares with ID text
-  - Render connection lines (prerequisites/paths)
-  - Zoom functionality (mouse wheel)
-  - Pan functionality (drag canvas)
-  - Camera system for viewport management
-- [ ] **Read-Only Mode**
-  - Load and parse existing .txt files
-  - Display tree on canvas
-  - Navigate and explore the tree
-  - View node positions and connections
+- ✅ **Paradox Script Parser** ✅
+  - ✅ Lexer: tokenize Paradox scripting language
+  - ✅ Parser: build AST from tokens
+  - ✅ Focus parser: parse `focus_tree` and `focus` blocks
+  - ✅ Technology parser: parse `technologies` and tech blocks
+  - ✅ Error handling and reporting
+- [x] **Visual Editor Canvas (Basic)** ✅
+  - ✅ Grid rendering with coordinates
+  - ✅ Render nodes as colored rectangles with ID text
+  - ✅ Zoom functionality (keyboard +/-)
+  - ✅ Pan functionality (arrow keys)
+  - ✅ Camera system for viewport management
+  - ✅ TechViewerScene for technology trees
+- [ ] **Canvas Enhancement** ← **IN PROGRESS**
+  - [ ] Add icon display on nodes
+  - [ ] Implement scroll boundaries
+  - [ ] Render connection lines (prerequisites/paths)
+  - [ ] Add mouse wheel zoom
+  - [ ] Add mouse drag pan
+  - [ ] Create FocusViewerScene for focus trees
 
 **Deliverable:** Application that can load and visualize existing focus trees and technology trees
 
@@ -154,27 +193,15 @@
 **Goal:** Icon integration and basic editing
 
 **Features:**
-- [ ] **GFX Integration**
-  - Parse .gfx files (goals.gfx, countrytechtreeview.gfx)
-  - Load .dds icon files
-  - Display actual icons instead of white squares
-  - Icon caching system
-- [ ] **Position Editing**
-  - Drag & drop nodes to new positions
-  - Snap to grid functionality
-  - Real-time position updates
-  - Visual feedback during drag
-- [ ] **Properties Panel**
-  - Display detailed node information
-  - Show all focus/tech properties
-  - View completion rewards / effects
-  - View prerequisites and conditions
-  - Read-only property display
-- [ ] **Validation Feedback**
-  - Highlight circular dependencies
-  - Show position conflicts
-  - Display invalid references
-  - Warning indicators on nodes
+- [ ] Parse .gfx files (goals.gfx, countrytechtreeview.gfx)
+- [ ] Load .dds icon files
+- [ ] Display actual icons on nodes
+- [ ] Implement icon caching system
+- [ ] Add drag & drop for node positioning
+- [ ] Implement snap to grid functionality
+- [ ] Create properties panel for node details
+- [ ] Add validation feedback (circular dependencies, conflicts)
+- [ ] Highlight invalid references visually
 
 **Deliverable:** Application with icon display and drag-drop editing of positions
 
@@ -184,33 +211,25 @@
 **Goal:** Full editing capabilities with file generation
 
 **Features:**
-- [ ] **Property Editing**
-  - Edit focus/tech properties in panel
-  - Modify completion rewards
-  - Edit availability conditions
-  - Change costs and research values
-- [ ] **Connection Editing**
-  - Visual creation of prerequisites
-  - Visual creation of technology paths
-  - Mutual exclusivity setup
-  - Delete connections
-- [ ] **Icon Management**
-  - Upload new icon images
-  - Automatic .dds conversion
-  - Auto-generate GFX sprite entries
-  - Icon preview and selection
-- [ ] **File Operations**
-  - Save changes back to .txt files
-  - Update .gfx files automatically
-  - Create .bak backups
-  - Atomic file writes
-  - Export to new files
-- [ ] **Advanced Features**
-  - Undo/redo support
-  - Copy/paste nodes
-  - Duplicate branches
-  - Auto-layout algorithms
-  - Search and filter nodes
+- [ ] Edit focus/tech properties in panel
+- [ ] Modify completion rewards and effects
+- [ ] Edit availability conditions
+- [ ] Visual creation of prerequisites
+- [ ] Visual creation of technology paths
+- [ ] Setup mutual exclusivity
+- [ ] Automatic .dds conversion for uploaded icons
+- [ ] Auto-generate GFX sprite entries
+- [ ] Icon preview and selection UI
+- [ ] Save changes back to .txt files
+- [ ] Update .gfx files automatically
+- [ ] Create .bak backups before saving
+- [ ] Implement atomic file writes
+- [ ] Export to new files functionality
+- [ ] Add undo/redo support
+- [ ] Implement copy/paste for nodes
+- [ ] Add duplicate branches feature
+- [ ] Create auto-layout algorithms
+- [ ] Add search and filter for nodes
 
 **Deliverable:** Full-featured editor with complete read/write capabilities
 
