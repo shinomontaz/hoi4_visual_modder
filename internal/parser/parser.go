@@ -17,11 +17,11 @@ func NewParser(input string) *Parser {
 	p := &Parser{
 		lexer: NewLexer(input),
 	}
-	
+
 	// Read two tokens to initialize current and peek
 	p.nextToken()
 	p.nextToken()
-	
+
 	return p
 }
 
@@ -36,7 +36,7 @@ func (p *Parser) Parse() (*Program, error) {
 	program := &Program{
 		Statements: []Statement{},
 	}
-	
+
 	for p.current.Type != TokenEOF {
 		stmt := p.parseStatement()
 		if stmt != nil {
@@ -44,23 +44,23 @@ func (p *Parser) Parse() (*Program, error) {
 		}
 		p.nextToken()
 	}
-	
+
 	if len(p.errors) > 0 {
 		return nil, fmt.Errorf("parsing errors: %v", p.errors)
 	}
-	
+
 	return program, nil
 }
 
 // parseStatement parses a statement
 func (p *Parser) parseStatement() Statement {
-	// Check if it's an assignment (identifier = value OR @1918 = value)
-	if p.current.Type == TokenIdentifier || p.current.Type == TokenKeyword || p.current.Type == TokenNumber {
+	// Check if it's an assignment (identifier = value OR @1918 = value OR "string" = value)
+	if p.current.Type == TokenIdentifier || p.current.Type == TokenKeyword || p.current.Type == TokenNumber || p.current.Type == TokenString {
 		if p.peek.Type == TokenEquals {
 			return p.parseAssignmentStatement()
 		}
 	}
-	
+
 	return nil
 }
 
@@ -73,18 +73,18 @@ func (p *Parser) parseAssignmentStatement() *AssignmentStatement {
 			Value: p.current.Value,
 		},
 	}
-	
+
 	// Expect '='
 	if !p.expectPeek(TokenEquals) {
 		return nil
 	}
-	
+
 	stmt.Token = p.current
-	
+
 	// Parse the value
 	p.nextToken()
 	stmt.Value = p.parseExpression()
-	
+
 	return stmt
 }
 
@@ -125,9 +125,9 @@ func (p *Parser) parseBlockExpression() Expression {
 		Token:      p.current,
 		Statements: []Statement{},
 	}
-	
+
 	p.nextToken()
-	
+
 	// Parse statements until we hit '}'
 	for p.current.Type != TokenRightBrace && p.current.Type != TokenEOF {
 		stmt := p.parseStatement()
@@ -136,12 +136,12 @@ func (p *Parser) parseBlockExpression() Expression {
 		}
 		p.nextToken()
 	}
-	
+
 	if p.current.Type != TokenRightBrace {
 		p.errors = append(p.errors, fmt.Sprintf("expected '}', got %s at line %d", p.current.Type, p.current.Line))
 		return nil
 	}
-	
+
 	return block
 }
 

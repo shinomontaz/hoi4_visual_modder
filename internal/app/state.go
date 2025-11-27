@@ -6,22 +6,32 @@ import (
 
 // State represents the application state
 type State struct {
-	// Project information
+	// Configuration
+	Config *AppConfig
+
+	// Mod and Game installations
+	ModDescriptor    *ModDescriptor
+	GameInstallation *GameInstallation
+
+	// Country context
+	CountryContext *CountryContext
+
+	// Project information (legacy, will be replaced)
 	ModPath          string
 	BasePath         string   // Root directory of the mod
 	SelectedFilePath string   // Full path to selected file
 	FileType         FileType // Type of selected file
 	CurrentMode      Mode
-	
+
 	// File browser state
 	AvailableFiles []FileInfo
 	SelectedFile   *FileInfo
 	FileContent    string
-	
+
 	// Loaded data
 	FocusTree      *domain.FocusTree
 	TechnologyTree *domain.TechnologyTree
-	
+
 	// UI state
 	SelectedNodeID string
 	CameraX        float64
@@ -40,7 +50,15 @@ const (
 
 // NewState creates a new application state
 func NewState() *State {
+	// Load config
+	config, err := LoadConfig()
+	if err != nil {
+		// If config load fails, use default
+		config = DefaultConfig()
+	}
+
 	return &State{
+		Config:      config,
 		CurrentMode: ModeNone,
 		Zoom:        1.0,
 	}
@@ -94,14 +112,79 @@ func (s *State) LoadFile(filePath string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	s.SelectedFilePath = filePath
 	s.BasePath = basePath
 	s.FileType = fileType
 	s.FileContent = content
-	
+
 	// Also set ModPath for backwards compatibility
 	s.ModPath = basePath
-	
+
 	return nil
+}
+
+// SetModDescriptor sets the mod descriptor and updates config
+func (s *State) SetModDescriptor(mod *ModDescriptor) error {
+	s.ModDescriptor = mod
+
+	// Update legacy fields for backwards compatibility
+	s.BasePath = mod.ModFolderPath
+	s.ModPath = mod.ModFolderPath
+
+	// Save to config
+	if s.Config != nil {
+		return s.Config.UpdateModPath(mod.FilePath)
+	}
+
+	return nil
+}
+
+// SetGameInstallation sets the game installation and updates config
+func (s *State) SetGameInstallation(game *GameInstallation) error {
+	s.GameInstallation = game
+
+	// Save to config
+	if s.Config != nil {
+		return s.Config.UpdateGamePath(game.Path)
+	}
+
+	return nil
+}
+
+// GetModPath returns the mod folder path (new or legacy)
+func (s *State) GetModPath() string {
+	if s.ModDescriptor != nil {
+		return s.ModDescriptor.ModFolderPath
+	}
+	return s.BasePath
+}
+
+// GetGamePath returns the game installation path
+func (s *State) GetGamePath() string {
+	if s.GameInstallation != nil {
+		return s.GameInstallation.Path
+	}
+	if s.Config != nil {
+		return s.Config.GamePath
+	}
+	return ""
+}
+
+// SetCountryContext sets the country context
+func (s *State) SetCountryContext(country *domain.BookmarkCountry) {
+	modPath := s.GetModPath()
+	gamePath := s.GetGamePath()
+
+	s.CountryContext = NewCountryContext(country, modPath, gamePath)
+
+	// Save to config
+	if s.Config != nil {
+		s.Config.UpdateLastCountry(country.Tag)
+	}
+}
+
+// GetCountryContext returns the current country context
+func (s *State) GetCountryContext() *CountryContext {
+	return s.CountryContext
 }

@@ -2,11 +2,9 @@ package scenes
 
 import (
 	"image/color"
-	"path/filepath"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/shinomontaz/hoi4_visual_modder/internal/app"
 	"github.com/shinomontaz/hoi4_visual_modder/internal/ui/components"
 	"github.com/sqweek/dialog"
@@ -14,114 +12,224 @@ import (
 
 // StartupScene is the initial scene for mod selection
 type StartupScene struct {
-	manager      *SceneManager
-	state        *app.State
-	openButton   *components.Button
-	errorMessage string
+	manager          *SceneManager
+	state            *app.State
+	selectModButton  *components.Button
+	selectGameButton *components.Button
+	autoDetectButton *components.Button
+	continueButton   *components.Button
+	errorMessage     string
+	infoMessage      string
 }
 
 // NewStartupScene creates a new StartupScene
 func NewStartupScene(manager *SceneManager, state *app.State) *StartupScene {
-	// Create "Open File..." button (centered on screen)
-	openButton := components.NewButton(440, 300, 400, 60, "Open File...")
-	
+	// Create buttons
+	selectModButton := components.NewButton(440, 200, 400, 50, "Select Mod (.mod file)")
+	selectGameButton := components.NewButton(440, 270, 250, 50, "Select Game Folder")
+	autoDetectButton := components.NewButton(700, 270, 140, 50, "Auto-detect")
+	continueButton := components.NewButton(440, 500, 400, 60, "Continue →")
+
 	return &StartupScene{
-		manager:    manager,
-		state:      state,
-		openButton: openButton,
+		manager:          manager,
+		state:            state,
+		selectModButton:  selectModButton,
+		selectGameButton: selectGameButton,
+		autoDetectButton: autoDetectButton,
+		continueButton:   continueButton,
 	}
 }
 
 // Update updates the startup scene
 func (s *StartupScene) Update() error {
-	// Update button
-	s.openButton.Update()
-	
-	// Handle button click or Ctrl+O shortcut
-	openFilePicker := s.openButton.IsClicked()
-	if ebiten.IsKeyPressed(ebiten.KeyControl) && inpututil.IsKeyJustPressed(ebiten.KeyO) {
-		openFilePicker = true
+	// Update all buttons
+	s.selectModButton.Update()
+	s.selectGameButton.Update()
+	s.autoDetectButton.Update()
+	s.continueButton.Update()
+
+	// Handle "Select Mod" button
+	if s.selectModButton.IsClicked() {
+		s.handleModSelection()
 	}
-	
-	if openFilePicker {
-		s.errorMessage = "" // Clear previous errors
-		
-		// Open native file picker dialog
-		filePath, err := dialog.File().
-			Filter("HOI4 Files", "txt").
-			Title("Select Focus or Technology File").
-			Load()
-		
-		if err != nil {
-			// User cancelled or error occurred
-			if err.Error() != "Cancelled" {
-				s.errorMessage = "Error opening file picker: " + err.Error()
-			}
-			return nil
-		}
-		
-		// Load file using ModLoader
-		err = s.state.LoadFile(filePath)
-		if err != nil {
-			s.errorMessage = err.Error()
-			// Show error dialog
-			dialog.Message("%s", err.Error()).Title("Error").Error()
-			return nil
-		}
-		
-		// Success! Switch to appropriate viewer based on file type
-		if s.state.FileType == app.FileTypeTechnology {
-			// Create and switch to tech viewer
-			techViewer := NewTechViewerScene(s.manager, filePath)
-			s.manager.AddScene("tech_viewer", techViewer)
-			s.manager.SwitchToNamed("tech_viewer")
-		} else if s.state.FileType == app.FileTypeFocus {
-			// For now, use file viewer (TODO: create focus viewer)
-			s.manager.SwitchTo(SceneFileViewer)
-		} else {
-			// Unknown type, use file viewer
-			s.manager.SwitchTo(SceneFileViewer)
-		}
+
+	// Handle "Select Game" button
+	if s.selectGameButton.IsClicked() {
+		s.handleGameSelection()
 	}
-	
+
+	// Handle "Auto-detect" button
+	if s.autoDetectButton.IsClicked() {
+		s.handleGameAutoDetect()
+	}
+
+	// Handle "Continue" button (only if both mod and game are selected)
+	if s.continueButton.IsClicked() && s.canContinue() {
+		// Switch to country selection scene
+		countryScene := NewCountrySelectionScene(s.manager, s.state)
+		s.manager.AddScene("country_selection", countryScene)
+		s.manager.SwitchToNamed("country_selection")
+	}
+
 	return nil
+}
+
+// handleModSelection opens file picker for .mod file
+func (s *StartupScene) handleModSelection() {
+	s.errorMessage = ""
+	s.infoMessage = ""
+
+	// Open file picker for .mod files
+	filePath, err := dialog.File().
+		Filter("HOI4 Mod Files", "mod").
+		Title("Select Mod Descriptor File").
+		Load()
+
+	if err != nil {
+		if err.Error() != "Cancelled" {
+			s.errorMessage = "Error: " + err.Error()
+		}
+		return
+	}
+
+	// Load and parse mod descriptor
+	modDesc, err := app.LoadModDescriptor(filePath)
+	if err != nil {
+		s.errorMessage = "Failed to load mod: " + err.Error()
+		dialog.Message("%s", err.Error()).Title("Mod Load Error").Error()
+		return
+	}
+
+	// Save to state
+	if err := s.state.SetModDescriptor(modDesc); err != nil {
+		s.errorMessage = "Failed to save mod config: " + err.Error()
+		return
+	}
+
+	s.infoMessage = "Mod loaded: " + modDesc.Name
+}
+
+// handleGameSelection opens folder picker for game installation
+func (s *StartupScene) handleGameSelection() {
+	s.errorMessage = ""
+	s.infoMessage = ""
+
+	// Open folder picker
+	folderPath, err := dialog.Directory().
+		Title("Select HOI4 Installation Folder").
+		Browse()
+
+	if err != nil {
+		if err.Error() != "Cancelled" {
+			s.errorMessage = "Error: " + err.Error()
+		}
+		return
+	}
+
+	// Validate game installation
+	game, err := app.ValidateGameInstallation(folderPath)
+	if err != nil {
+		s.errorMessage = "Invalid game folder: " + err.Error()
+		dialog.Message("%s", err.Error()).Title("Game Validation Error").Error()
+		return
+	}
+
+	// Save to state
+	if err := s.state.SetGameInstallation(game); err != nil {
+		s.errorMessage = "Failed to save game config: " + err.Error()
+		return
+	}
+
+	s.infoMessage = "Game found: " + game.Path
+}
+
+// handleGameAutoDetect tries to auto-detect game installation
+func (s *StartupScene) handleGameAutoDetect() {
+	s.errorMessage = ""
+	s.infoMessage = "Searching for HOI4 installation..."
+
+	// Try auto-detect
+	gamePath, err := app.AutoDetectGamePath()
+	if err != nil {
+		s.errorMessage = "Auto-detect failed: " + err.Error()
+		return
+	}
+
+	// Validate
+	game, err := app.ValidateGameInstallation(gamePath)
+	if err != nil {
+		s.errorMessage = "Validation failed: " + err.Error()
+		return
+	}
+
+	// Save to state
+	if err := s.state.SetGameInstallation(game); err != nil {
+		s.errorMessage = "Failed to save game config: " + err.Error()
+		return
+	}
+
+	s.infoMessage = "Game auto-detected: " + game.Path
+}
+
+// canContinue checks if both mod and game are selected
+func (s *StartupScene) canContinue() bool {
+	return s.state.ModDescriptor != nil && s.state.GameInstallation != nil
 }
 
 // Draw renders the startup scene
 func (s *StartupScene) Draw(screen *ebiten.Image) {
 	// Clear screen with dark background
 	screen.Fill(color.RGBA{30, 30, 30, 255})
-	
+
 	// Draw title
-	ebitenutil.DebugPrintAt(screen, "HOI4 Visual Modder", 520, 100)
-	
+	ebitenutil.DebugPrintAt(screen, "HOI4 Visual Modder", 520, 80)
+
 	// Draw subtitle
-	ebitenutil.DebugPrintAt(screen, "Visual editor for Hearts of Iron IV mod files", 440, 140)
-	
+	ebitenutil.DebugPrintAt(screen, "Setup: Select Mod and Game", 500, 120)
+
 	// Draw instructions
-	ebitenutil.DebugPrintAt(screen, "Click the button below or press Ctrl+O to open a file", 420, 220)
-	
-	// Draw button
-	s.openButton.Draw(screen)
-	
-	// Draw file info if loaded
-	if s.state.BasePath != "" {
-		y := 400
-		ebitenutil.DebugPrintAt(screen, "Selected File:", 440, y)
-		
-		fileName := filepath.Base(s.state.SelectedFilePath)
-		ebitenutil.DebugPrintAt(screen, "  File: "+fileName, 440, y+20)
-		ebitenutil.DebugPrintAt(screen, "  Type: "+s.state.FileType.String(), 440, y+40)
-		ebitenutil.DebugPrintAt(screen, "  Base: "+s.state.BasePath, 440, y+60)
+	ebitenutil.DebugPrintAt(screen, "1. Select your mod's .mod file", 440, 170)
+	ebitenutil.DebugPrintAt(screen, "2. Select or auto-detect HOI4 installation", 440, 240)
+
+	// Draw buttons
+	s.selectModButton.Draw(screen)
+	s.selectGameButton.Draw(screen)
+	s.autoDetectButton.Draw(screen)
+
+	// Draw mod info if loaded
+	if s.state.ModDescriptor != nil {
+		y := 350
+		mod := s.state.ModDescriptor
+		ebitenutil.DebugPrintAt(screen, "✓ Mod: "+mod.Name, 440, y)
+		ebitenutil.DebugPrintAt(screen, "  Version: "+mod.Version+" (Game: "+mod.SupportedVersion+")", 440, y+20)
+		ebitenutil.DebugPrintAt(screen, "  Path: "+mod.ModFolderPath, 440, y+40)
 	}
-	
+
+	// Draw game info if loaded
+	if s.state.GameInstallation != nil {
+		y := 350
+		if s.state.ModDescriptor != nil {
+			y = 420 // Move down if mod is also shown
+		}
+		game := s.state.GameInstallation
+		ebitenutil.DebugPrintAt(screen, "✓ Game: Hearts of Iron IV", 440, y)
+		ebitenutil.DebugPrintAt(screen, "  Path: "+game.Path, 440, y+20)
+	}
+
+	// Draw continue button if both are selected
+	if s.canContinue() {
+		s.continueButton.Draw(screen)
+	}
+
+	// Draw info message
+	if s.infoMessage != "" {
+		ebitenutil.DebugPrintAt(screen, s.infoMessage, 440, 580)
+	}
+
 	// Draw error message if any
 	if s.errorMessage != "" {
-		ebitenutil.DebugPrintAt(screen, "Error: "+s.errorMessage, 440, 500)
+		ebitenutil.DebugPrintAt(screen, "Error: "+s.errorMessage, 440, 600)
 	}
-	
-	// Draw hint
-	ebitenutil.DebugPrintAt(screen, "Supported: .txt files from common/national_focus/ or common/technologies/", 340, 650)
 }
 
 // OnEnter is called when entering this scene

@@ -8,7 +8,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
-	
+
 	"github.com/shinomontaz/hoi4_visual_modder/internal/domain"
 	"github.com/shinomontaz/hoi4_visual_modder/internal/parser"
 	"github.com/shinomontaz/hoi4_visual_modder/internal/ui/components"
@@ -21,11 +21,11 @@ type TechViewerScene struct {
 	nodes        []*components.Node
 	technologies []*domain.Technology
 	iconLoader   *components.IconLoader
-	
+
 	// UI state
 	selectedNode *components.Node
 	hoveredNode  *components.Node
-	
+
 	// Info panel
 	showInfo bool
 }
@@ -38,29 +38,35 @@ func NewTechViewerScene(manager *SceneManager, filePath string) *TechViewerScene
 		nodes:    make([]*components.Node, 0),
 		showInfo: true,
 	}
-	
+
 	// Parse the technology file
 	if err := scene.loadTechnologies(filePath); err != nil {
 		fmt.Printf("Error loading technologies: %v\n", err)
 		return scene
 	}
-	
-	// Initialize icon loader with base path from manager state
-	if manager.state != nil && manager.state.BasePath != "" {
-		scene.iconLoader = components.NewIconLoader(manager.state.BasePath)
+
+	// Initialize icon loader with paths from manager state
+	if manager.state != nil {
+		modPath := manager.state.GetModPath()
+		gamePath := manager.state.GetGamePath()
+
+		scene.iconLoader = components.NewIconLoader(modPath)
+		if gamePath != "" {
+			scene.iconLoader.SetGamePath(gamePath)
+		}
 	} else {
 		// Fallback: try to detect base path from file path
 		scene.iconLoader = components.NewIconLoader(detectBasePath(filePath))
 	}
-	
+
 	// Create nodes from technologies
 	scene.createNodes()
-	
+
 	// Center view on first node
 	if len(scene.nodes) > 0 {
 		scene.centerOnNode(scene.nodes[0])
 	}
-	
+
 	return scene
 }
 
@@ -93,21 +99,21 @@ func (s *TechViewerScene) loadTechnologies(filePath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
 	}
-	
+
 	// Parse with lexer and parser
 	p := parser.NewParser(string(content))
 	program, err := p.Parse()
 	if err != nil {
 		return fmt.Errorf("failed to parse: %w", err)
 	}
-	
+
 	// Parse technologies
 	techParser := parser.NewTechParser()
 	technologies, err := techParser.ParseTechnologies(program)
 	if err != nil {
 		return fmt.Errorf("failed to parse technologies: %w", err)
 	}
-	
+
 	s.technologies = technologies
 	return nil
 }
@@ -116,13 +122,13 @@ func (s *TechViewerScene) loadTechnologies(filePath string) error {
 func (s *TechViewerScene) createNodes() {
 	for _, tech := range s.technologies {
 		node := components.NewNode(tech.ID, tech.ID, tech.Position.X, tech.Position.Y)
-		
+
 		// Load icon if icon loader is available
 		if s.iconLoader != nil {
 			// Use tech ID as icon name (standard HOI4 convention)
 			node.Icon = s.iconLoader.LoadTechIcon(tech.ID)
 		}
-		
+
 		s.nodes = append(s.nodes, node)
 	}
 }
@@ -138,7 +144,7 @@ func (s *TechViewerScene) centerOnNode(node *components.Node) {
 func (s *TechViewerScene) Update() error {
 	// Update canvas (pan/zoom)
 	s.canvas.Update()
-	
+
 	// Handle mouse hover
 	mouseX, mouseY := ebiten.CursorPosition()
 	s.hoveredNode = nil
@@ -150,7 +156,7 @@ func (s *TechViewerScene) Update() error {
 			node.IsHovered = false
 		}
 	}
-	
+
 	// Handle mouse click
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		if s.hoveredNode != nil {
@@ -161,17 +167,17 @@ func (s *TechViewerScene) Update() error {
 			s.selectedNode.IsSelected = true
 		}
 	}
-	
+
 	// ESC to go back
 	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
 		s.manager.SwitchTo(SceneStartup)
 	}
-	
+
 	// Toggle info panel with I key
 	if ebiten.IsKeyPressed(ebiten.KeyI) {
 		s.showInfo = !s.showInfo
 	}
-	
+
 	return nil
 }
 
@@ -179,15 +185,15 @@ func (s *TechViewerScene) Update() error {
 func (s *TechViewerScene) Draw(screen *ebiten.Image) {
 	// Draw canvas (background + grid)
 	s.canvas.Draw(screen)
-	
+
 	// Draw connection lines (TODO: implement later)
 	// s.drawConnections(screen)
-	
+
 	// Draw nodes
 	for _, node := range s.nodes {
 		node.Draw(screen, s.canvas)
 	}
-	
+
 	// Draw UI overlay
 	s.drawUI(screen)
 }
@@ -198,10 +204,10 @@ func (s *TechViewerScene) drawUI(screen *ebiten.Image) {
 	if s.showInfo {
 		s.drawInfoPanel(screen)
 	}
-	
+
 	// Draw controls help
 	s.drawControls(screen)
-	
+
 	// Draw selected node info
 	if s.selectedNode != nil {
 		s.drawNodeInfo(screen)
@@ -214,13 +220,13 @@ func (s *TechViewerScene) drawInfoPanel(screen *ebiten.Image) {
 	panelY := float32(10)
 	panelWidth := float32(250)
 	panelHeight := float32(100)
-	
+
 	// Background
-	vector.DrawFilledRect(screen, panelX, panelY, panelWidth, panelHeight, 
+	vector.DrawFilledRect(screen, panelX, panelY, panelWidth, panelHeight,
 		color.RGBA{30, 30, 30, 220}, false)
-	vector.StrokeRect(screen, panelX, panelY, panelWidth, panelHeight, 2, 
+	vector.StrokeRect(screen, panelX, panelY, panelWidth, panelHeight, 2,
 		color.RGBA{80, 80, 80, 255}, false)
-	
+
 	// Text
 	y := int(panelY + 20)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Technologies: %d", len(s.technologies)), int(panelX+10), y)
@@ -231,11 +237,11 @@ func (s *TechViewerScene) drawInfoPanel(screen *ebiten.Image) {
 // drawControls draws the controls help
 func (s *TechViewerScene) drawControls(screen *ebiten.Image) {
 	controlsText := "Arrow Keys: Pan | +/-: Zoom | R: Reset | I: Toggle Info | ESC: Back"
-	
+
 	// Draw at bottom center (approximate)
 	x := s.canvas.Width/2 - len(controlsText)*3
 	y := s.canvas.Height - 30
-	
+
 	ebitenutil.DebugPrintAt(screen, controlsText, x, y)
 }
 
@@ -249,23 +255,23 @@ func (s *TechViewerScene) drawNodeInfo(screen *ebiten.Image) {
 			break
 		}
 	}
-	
+
 	if tech == nil {
 		return
 	}
-	
+
 	// Draw panel on the right side
 	panelX := float32(s.canvas.Width - 310)
 	panelY := float32(10)
 	panelWidth := float32(300)
 	panelHeight := float32(200)
-	
+
 	// Background
 	vector.DrawFilledRect(screen, panelX, panelY, panelWidth, panelHeight,
 		color.RGBA{30, 30, 30, 220}, false)
 	vector.StrokeRect(screen, panelX, panelY, panelWidth, panelHeight, 2,
 		color.RGBA{80, 120, 160, 255}, false)
-	
+
 	// Text
 	y := int(panelY + 20)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("ID: %s", tech.ID), int(panelX+10), y)
@@ -284,4 +290,3 @@ func (s *TechViewerScene) OnEnter() {
 func (s *TechViewerScene) OnExit() {
 	// Nothing to do for now
 }
-

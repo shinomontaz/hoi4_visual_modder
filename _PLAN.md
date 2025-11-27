@@ -30,27 +30,71 @@
 - ❌ File serialization (writing back to .txt)
 
 ### Immediate Next Steps (Current Sprint)
-**Goal:** Complete technology tree visualization with icons and boundaries
+**Goal:** Refactor to country-centric architecture
 
-10. **Add icon display for technology nodes** ← **IN PROGRESS**
-    - ✅ Load .dds icon files from mod folder
-    - ✅ Display icons on nodes
-    - ⏳ Add fallback to game folder for missing icons
+**ARCHITECTURE CHANGE:** Переход от file-centric к country-centric подходу.
+См. `_REFACTORING_PLAN.md` и `_DATA_STRUCTURE.md` для деталей.
+
+**Sprint 1: Foundation (Current)**
+10. **Create ModDescriptor parser and validator**
+    - Parse .mod files to extract path variable
+    - Validate mod folder exists next to .mod file
+    - Extract mod metadata (name, version, tags)
     
-11. **Add game folder path configuration**
-    - Add setting for HOI4 game installation path
-    - Implement fallback icon loading (mod → game → placeholder)
-    - Store game path in config/settings
+11. **Create GameInstallation validator**
+    - Auto-detect HOI4 installation (already in IconLoader)
+    - Manual folder selection
+    - Validate hoi4.exe + folder structure
     
-12. **Implement canvas scroll boundaries**
-    - Calculate bounds based on node positions
-    - Prevent scrolling into empty space
-    - Add visual indicators for boundaries
+12. **Update StartupScene UI**
+    - File picker for .mod files
+    - Folder picker + Auto-detect button for game
+    - Display mod/game info after selection
+    - Transition to CountrySelectionScene
     
-13. **Create focus tree viewer scene**
-    - Duplicate TechViewerScene structure for FocusViewerScene
-    - Integrate FocusParser with viewer
-    - Handle focus-specific rendering (relative positioning)
+13. **Create AppConfig persistence**
+    - Save/load mod path, game path
+    - Save last selected country
+    - JSON config file
+
+**Sprint 2: Country Selection**
+14. **Create BookmarkParser**
+    - Parse common/bookmarks/*.txt files
+    - Extract country tags and metadata
+    - Fallback: mod → game
+    
+15. **Create CountrySelectionScene**
+    - Display list of countries from bookmarks
+    - Filter by major/minor
+    - Search functionality
+    - Transition to CountryMenuScene
+
+**Sprint 3: Country Context**
+16. **Create CountryContext and CountryMenuScene**
+    - Main menu for selected country
+    - Buttons: National Focus, Technologies
+    - Display country metadata
+    
+17. **Create TechFolderResolver**
+    - Parse technology_tags files
+    - Resolve country-specific tech folders
+    - Map folder names to file paths
+
+**Sprint 4: Integration**
+18. **Update TechViewerScene**
+    - Accept CountryContext instead of filePath
+    - Use resolved tech file paths
+    - Add breadcrumb navigation
+    
+19. **Create FocusViewerScene**
+    - Similar to TechViewerScene
+    - Use FocusParser
+    - Relative positioning for focuses
+    
+20. **Implement navigation system**
+    - Navigation stack for "Back" buttons
+    - Breadcrumb rendering
+    - Context passing between scenes
 
 ### Completed Steps
 1. ✅ ~~Create initial project structure~~
