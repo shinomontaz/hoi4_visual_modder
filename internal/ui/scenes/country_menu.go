@@ -6,6 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/shinomontaz/hoi4_visual_modder/internal/app"
+	"github.com/shinomontaz/hoi4_visual_modder/internal/domain"
 	"github.com/shinomontaz/hoi4_visual_modder/internal/ui/components"
 )
 
@@ -59,7 +60,9 @@ func (s *CountryMenuScene) loadTechCategories() {
 
 	startY := 420
 	for i, category := range s.techCategories {
-		btn := components.NewButton(440, startY+i*50, 400, 45, "  • "+category)
+		// Get localized display name from context
+		displayName := ctx.GetLocalizedFolderName(category)
+		btn := components.NewButton(440, startY+i*50, 400, 45, "  • "+displayName)
 		s.techCategoryButtons = append(s.techCategoryButtons, btn)
 	}
 }
@@ -127,14 +130,24 @@ func (s *CountryMenuScene) handleTechCategoryClick(category string) {
 		return
 	}
 
-	techPath, err := ctx.GetTechPath(category)
+	// Load technologies for this folder
+	technologies, err := ctx.LoadTechnologiesForFolder(category)
 	if err != nil {
 		s.errorMessage = "Failed to load tech: " + err.Error()
 		return
 	}
 
+	// Create technology tree from loaded technologies
+	techTree := domain.NewTechnologyTree()
+	for _, tech := range technologies {
+		techTree.AddTechnology(tech)
+	}
+
+	// Set in state
+	s.state.TechnologyTree = techTree
+
 	// Create and switch to tech viewer
-	techViewer := NewTechViewerScene(s.manager, techPath)
+	techViewer := NewTechViewerSceneWithTree(s.manager, techTree)
 	s.manager.AddScene("tech_viewer", techViewer)
 	s.manager.SwitchToNamed("tech_viewer")
 }

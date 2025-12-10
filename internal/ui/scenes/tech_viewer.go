@@ -70,6 +70,44 @@ func NewTechViewerScene(manager *SceneManager, filePath string) *TechViewerScene
 	return scene
 }
 
+// NewTechViewerSceneWithTree creates a new tech viewer scene from a pre-loaded technology tree
+func NewTechViewerSceneWithTree(manager *SceneManager, techTree *domain.TechnologyTree) *TechViewerScene {
+	// Convert map to slice
+	technologies := make([]*domain.Technology, 0, len(techTree.Technologies))
+	for _, tech := range techTree.Technologies {
+		technologies = append(technologies, tech)
+	}
+
+	scene := &TechViewerScene{
+		manager:      manager,
+		canvas:       components.NewCanvas(1280, 720),
+		nodes:        make([]*components.Node, 0),
+		showInfo:     true,
+		technologies: technologies,
+	}
+
+	// Initialize icon loader with paths from manager state
+	if manager.state != nil {
+		modPath := manager.state.GetModPath()
+		gamePath := manager.state.GetGamePath()
+
+		scene.iconLoader = components.NewIconLoader(modPath)
+		if gamePath != "" {
+			scene.iconLoader.SetGamePath(gamePath)
+		}
+	}
+
+	// Create nodes from technologies
+	scene.createNodes()
+
+	// Center view on first node
+	if len(scene.nodes) > 0 {
+		scene.centerOnNode(scene.nodes[0])
+	}
+
+	return scene
+}
+
 // detectBasePath tries to extract base path from file path
 func detectBasePath(filePath string) string {
 	// Simple heuristic: find "common" in path and go up one level
