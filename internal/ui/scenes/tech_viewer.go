@@ -314,7 +314,22 @@ func (s *TechViewerScene) drawNodeInfo(screen *ebiten.Image) {
 	y := int(panelY + 20)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("ID: %s", tech.ID), int(panelX+10), y)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Folder: %s", tech.Folder), int(panelX+10), y+15)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Position: (%d, %d)", tech.Position.X, tech.Position.Y), int(panelX+10), y+30)
+
+	// Show position with aliases
+	posStr := fmt.Sprintf("Position: (%d, %d)", tech.Position.X, tech.Position.Y)
+	if tech.Position.XVar != "" || tech.Position.YVar != "" {
+		xVar := tech.Position.XVar
+		if xVar == "" {
+			xVar = fmt.Sprintf("%d", tech.Position.X)
+		}
+		yVar := tech.Position.YVar
+		if yVar == "" {
+			yVar = fmt.Sprintf("%d", tech.Position.Y)
+		}
+		posStr = fmt.Sprintf("Position: { x = %s y = %s }", xVar, yVar)
+	}
+	ebitenutil.DebugPrintAt(screen, posStr, int(panelX+10), y+30)
+
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Research Cost: %.1f", tech.ResearchCost), int(panelX+10), y+45)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Paths: %d", len(tech.Paths)), int(panelX+10), y+60)
 }

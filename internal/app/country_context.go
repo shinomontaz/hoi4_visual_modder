@@ -18,6 +18,7 @@ type CountryContext struct {
 	TechFolders     []string             // Available technology folders (IDs)
 	Localizations   map[string]string    // Localized strings
 	AllTechnologies []*domain.Technology // All loaded technologies (cached)
+	CountryFlags    []string             // Country flags from history files
 }
 
 // NewCountryContext creates a new country context
@@ -30,19 +31,67 @@ func NewCountryContext(country *domain.BookmarkCountry, modPath, gamePath string
 		Localizations: make(map[string]string),
 	}
 
+	// Load country flags (needed for folder filtering)
+	ctx.loadCountryFlags()
+
 	// Load localizations
 	ctx.loadLocalizations()
 
 	// Resolve focus path
 	ctx.resolveFocusPath()
 
-	// Resolve tech folders
+	// Resolve tech folders (uses country flags)
 	ctx.resolveTechFolders()
 
 	// Load all technologies once (cached)
 	ctx.loadAllTechnologies()
 
 	return ctx
+}
+
+// loadCountryFlags loads flags from history/countries files
+func (ctx *CountryContext) loadCountryFlags() {
+	flagsParser := parser.NewCountryFlagsParser(ctx.GamePath, ctx.ModPath)
+	flags, err := flagsParser.ParseCountryFlags(ctx.Country.Tag)
+	if err != nil {
+		println("Warning: Failed to load country flags:", err.Error())
+		ctx.CountryFlags = make([]string, 0)
+		return
+	}
+
+	ctx.CountryFlags = flags
+
+	// If this is a major country, add all UNLOCK:* flags for technology folders
+	if ctx.Country.IsMajor {
+		unlockFlags := []string{
+			"UNLOCK:electronics_folder",
+			"UNLOCK:nuclear_folder",
+			"UNLOCK:infantry_folder",
+			"UNLOCK:support_folder",
+			"UNLOCK:armor_folder",
+			"UNLOCK:artillery_folder",
+			"UNLOCK:land_doctrine_folder",
+			"UNLOCK:air_doctrine_folder",
+			"UNLOCK:naval_doctrine_folder",
+		}
+
+		// Add unlock flags if not already present
+		for _, unlockFlag := range unlockFlags {
+			hasFlag := false
+			for _, existingFlag := range ctx.CountryFlags {
+				if existingFlag == unlockFlag {
+					hasFlag = true
+					break
+				}
+			}
+			if !hasFlag {
+				ctx.CountryFlags = append(ctx.CountryFlags, unlockFlag)
+			}
+		}
+		println("Loaded", len(flags), "country flags for", ctx.Country.Tag, "(major: added UNLOCK flags)")
+	} else {
+		println("Loaded", len(flags), "country flags for", ctx.Country.Tag)
+	}
 }
 
 // loadAllTechnologies loads all technologies once and caches them
@@ -107,19 +156,53 @@ func (ctx *CountryContext) resolveFocusPath() {
 }
 
 // resolveTechFolders finds available technology folders from technology_tags
+// Filters folders based on country flags and overlay logic
 func (ctx *CountryContext) resolveTechFolders() {
-	// Parse technology_folders from technology_tags files
+	// Parse technology_folders with detailed information
 	tagsParser := parser.NewTechnologyTagsParser(ctx.GamePath, ctx.ModPath)
-	folders, err := tagsParser.ParseTechnologyFolders()
+	allFolders, err := tagsParser.ParseTechnologyFoldersDetailed()
 	if err != nil {
 		println("Warning: Failed to parse technology_folders:", err.Error())
-		// Fallback: if parsing fails, return empty list
 		ctx.TechFolders = make([]string, 0)
 		return
 	}
 
-	println("Found", len(folders), "technology folders")
-	ctx.TechFolders = folders
+	println("Found", len(allFolders), "total technology folders")
+
+	// Create condition evaluator
+	evaluator := NewConditionEvaluator(ctx.CountryFlags)
+
+	// Filter folders based on availability conditions
+	availableFolders := make([]string, 0)
+	overlayMap := make(map[string]bool) // base_folder -> overlay_active
+
+	for _, folder := range allFolders {
+		if folder.IsOverlay {
+			// Check if overlay should be shown
+			baseName := folder.Name[:len(folder.Name)-len("_overlay_folder")]
+			if folder.Available != nil {
+				// Overlay shown when condition is FALSE (i.e., folder is locked)
+				overlayActive := !evaluator.Evaluate(folder.Available)
+				overlayMap[baseName] = overlayActive
+			}
+		} else {
+			// Regular folder - check if available
+			if folder.Available == nil || evaluator.Evaluate(folder.Available) {
+				availableFolders = append(availableFolders, folder.Name)
+			}
+		}
+	}
+
+	// Remove folders that have active overlays (locked folders)
+	filtered := make([]string, 0)
+	for _, folderName := range availableFolders {
+		if !overlayMap[folderName] {
+			filtered = append(filtered, folderName)
+		}
+	}
+
+	ctx.TechFolders = filtered
+	println("Available technology folders:", len(filtered), "out of", len(allFolders))
 }
 
 // GetFocusPath returns the path to the national focus file
@@ -185,4 +268,34 @@ func (ctx *CountryContext) GetLocalizedFolderName(folderID string) string {
 	}
 
 	return displayName
+}
+
+// HasFlag checks if country has a specific flag
+func (ctx *CountryContext) HasFlag(flagName string) bool {
+	for _, flag := range ctx.CountryFlags {
+		if flag == flagName {
+			return true
+		}
+	}
+	return false
+}
+
+// HasAnyFlag checks if country has any of the specified flags
+func (ctx *CountryContext) HasAnyFlag(flags []string) bool {
+	for _, flag := range flags {
+		if ctx.HasFlag(flag) {
+			return true
+		}
+	}
+	return false
+}
+
+// GetUnlockFlags returns only UNLOCK:* flags
+func (ctx *CountryContext) GetUnlockFlags() []string {
+	return parser.GetUnlockFlags(ctx.CountryFlags)
+}
+
+// GetCountrySpecificFlags returns flags specific to this country (e.g., GER_air, SOV_armor)
+func (ctx *CountryContext) GetCountrySpecificFlags() []string {
+	return parser.GetCountrySpecificFlags(ctx.CountryFlags, ctx.Country.Tag)
 }

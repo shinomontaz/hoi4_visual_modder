@@ -20,10 +20,10 @@ type CountryMenuScene struct {
 	techButton      *components.Button
 	backButton      *components.Button
 
-	// Tech category buttons (shown when tech button clicked)
-	showTechCategories  bool
-	techCategoryButtons []*components.Button
-	techCategories      []string
+	// Tech categories list (shown when tech button clicked)
+	showTechCategories bool
+	techList           *components.ScrollableList
+	techCategories     []string
 
 	errorMessage string
 }
@@ -40,6 +40,9 @@ func NewCountryMenuScene(manager *SceneManager, state *app.State) *CountryMenuSc
 	scene.techButton = components.NewButton(440, 330, 400, 60, "Technologies")
 	scene.backButton = components.NewButton(50, 650, 200, 50, "← Back")
 
+	// Create scrollable list for tech categories
+	scene.techList = components.NewScrollableList(440, 420, 400, 300, 6)
+
 	// Load tech categories
 	scene.loadTechCategories()
 
@@ -55,16 +58,13 @@ func (s *CountryMenuScene) loadTechCategories() {
 
 	s.techCategories = ctx.TechFolders
 
-	// Create buttons for each category
-	s.techCategoryButtons = make([]*components.Button, 0)
-
-	startY := 420
+	// Create display names for scrollable list
+	displayNames := make([]string, len(s.techCategories))
 	for i, category := range s.techCategories {
-		// Get localized display name from context
-		displayName := ctx.GetLocalizedFolderName(category)
-		btn := components.NewButton(440, startY+i*50, 400, 45, "  • "+displayName)
-		s.techCategoryButtons = append(s.techCategoryButtons, btn)
+		displayNames[i] = ctx.GetLocalizedFolderName(category)
 	}
+
+	s.techList.SetItems(displayNames)
 }
 
 // Update updates the country menu scene
@@ -90,13 +90,15 @@ func (s *CountryMenuScene) Update() error {
 		s.showTechCategories = !s.showTechCategories
 	}
 
-	// Handle tech category buttons
+	// Handle tech categories list
 	if s.showTechCategories {
-		for i, btn := range s.techCategoryButtons {
-			btn.Update()
-			if btn.IsClicked() {
-				s.handleTechCategoryClick(s.techCategories[i])
-			}
+		prevIndex := s.techList.GetSelectedIndex()
+		s.techList.Update()
+
+		// Check if an item was just selected (index changed)
+		selectedIndex := s.techList.GetSelectedIndex()
+		if selectedIndex >= 0 && selectedIndex < len(s.techCategories) && selectedIndex != prevIndex {
+			s.handleTechCategoryClick(s.techCategories[selectedIndex])
 		}
 	}
 
@@ -141,6 +143,14 @@ func (s *CountryMenuScene) handleTechCategoryClick(category string) {
 	techTree := domain.NewTechnologyTree()
 	for _, tech := range technologies {
 		techTree.AddTechnology(tech)
+	}
+
+	// Detect sub-trees for this folder
+	loader := app.NewTechnologyLoader(ctx.ModPath, ctx.GamePath)
+	subTrees := loader.DetectSubTrees(category, technologies)
+	if len(subTrees) > 0 {
+		techTree.SubTrees[category] = subTrees
+		println("Detected", len(subTrees), "sub-trees in", category)
 	}
 
 	// Set in state
@@ -189,20 +199,10 @@ func (s *CountryMenuScene) Draw(screen *ebiten.Image) {
 	techInfo := "(" + string(rune(len(s.techCategories))) + " categories available)"
 	ebitenutil.DebugPrintAt(screen, techInfo, 850, 350)
 
-	// Draw tech categories if shown
-	if s.showTechCategories && len(s.techCategoryButtons) > 0 {
+	// Draw tech categories list if shown
+	if s.showTechCategories {
 		ebitenutil.DebugPrintAt(screen, "Technology Categories:", 440, 390)
-
-		// Draw category buttons (max 5 visible)
-		maxVisible := 5
-		for i := 0; i < maxVisible && i < len(s.techCategoryButtons); i++ {
-			s.techCategoryButtons[i].Draw(screen)
-		}
-
-		if len(s.techCategories) > maxVisible {
-			remaining := len(s.techCategories) - maxVisible
-			ebitenutil.DebugPrintAt(screen, "... and "+string(rune(remaining))+" more", 460, 420+maxVisible*50)
-		}
+		s.techList.Draw(screen)
 	}
 
 	// Draw back button

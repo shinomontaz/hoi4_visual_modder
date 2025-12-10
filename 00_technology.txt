@@ -1,0 +1,643 @@
+# Do not change tags in here without changing every other reference to them.
+# If adding new technology, make sure they are uniquely named.
+
+technology_categories = {
+	## LAND
+	artillery
+	light_artillery
+	med_artillery
+	heavy_artillery
+	cat_anti_tank
+	infantry_weapons
+	smg_weapons
+	motorized_equipment
+	cat_mechanized_equipment
+	rocketry
+	nuclear
+	industry
+	medical_tech
+	tool_tech
+	material_tech
+	farming_tech
+	power_tech
+	concentrated_industry_category
+	dispersed_industry_category
+	electronics
+	strategic_destruction_tree
+	battlefield_support_tree
+	operational_integrity_tree
+	synth_resources
+	fuel_tech
+	encryption_tech
+	decryption_tech
+	computing_tech
+	radio_tech
+	radar_tech
+	uniform_tech
+	construction_tech
+	civilian_tech
+	excavation_tech
+	night_vision
+	base_strike_main
+	mot_rockets
+	support_tech
+	para_tech
+	engineers_tech
+	recon_tech
+	mountaineers_tech
+	military_police_tech
+	hospital_tech
+	logistics_tech
+	signal_company_tech
+	maintenance_company_tech
+	flamethrower_tech
+	anti_air_tech
+	DIV_HQ_tech
+	train_tech
+	horse_tech
+	
+	infantry_weapons_rifle
+	infantry_weapons_assault
+	
+	## TANKS
+	armor_tech
+	armor_chassis
+	cat_light_armor
+	cat_medium_armor
+	cat_heavy_armor
+	cat_light_armor_component
+	cat_medium_armor_component
+	cat_heavy_armor_component
+	cat_amph_armor
+	cat_para_armor
+	amp_armor
+	
+	armor_tech_component
+	armor_tech_transmission
+	armor_tech_suspension
+	armor_tech_engine
+	armor_tech_engine_gasoline
+	armor_tech_engine_diesel
+	armor_tech_armor
+	armor_tech_armor_design
+	armor_tech_armor_construction
+	armor_tech_gun
+	armor_tech_ammo
+	armor_tech_special
+	
+	armor_tech_ger_panzer3
+	armor_tech_ger_panzer4
+	armor_tech_ger_panther
+	armor_tech_ger_tiger
+	
+	armor_tech_usa_medium
+	
+	## AIR
+	air_engine
+	light_air
+	medium_air
+	heavy_air
+	light_fighter
+	cat_heavy_fighter
+	tactical_bomber
+	cat_strategic_bomber
+	cas_bomber
+	jet_technology
+	jet_engine
+	jet_aircraft
+	air_equipment
+	
+	macchi_air 
+	savoia_marchetti_air
+	caproni_air
+	reggiane_air
+	piaggio_air
+	fiat_air
+	cant_air
+	imam_air
+	breda_air
+	ambrosini_air
+	
+	heinkel_air
+	arado_air
+	blohm_voss_air
+	messerschmitt_air
+	focke_wulf_air
+	dornier_air
+	junkers_air
+	henschel_air
+	fieseler_air
+	
+	gloster_air
+	boulton_paul_air
+	westland_air
+	martin_baker_air
+	hawker_air
+	armstrong_air
+	supermarine_air
+	fairey_air
+	bristol_air
+	de_havilland_air
+	vickers_air
+	blackburn_air
+	handley_page_air
+	avro_air
+	short_air
+	saro_air
+	
+	morane_air
+	dewoitine_air
+	bloch_air
+	potez_air
+	sncac_air
+	arsenal_air
+	loire_air
+	breguet_air
+	amiot_air
+	farman_air
+	latecoere_air
+	levasseur_air
+	
+	polikarpov_air
+	yakolev_air
+	lavochkin_air
+	mikoyan_gurevich_air
+	tupolev_air
+	grigorovich_air
+	petlyakov_air
+	sukhoi_air
+	arkhangelsky_air
+	ilyushin_air
+	yermolayev_air
+	beriev_air
+	
+	boeing_air
+	curtiss_air
+	north_american_air
+	republic_air
+	bell_air
+	consolidated_air
+	lockheed_air
+	douglas_air
+	northrop_air
+	grumman_air
+	vultee_air
+	beechcraft_air
+	martin_air
+	brewster_air
+	vought_air
+	
+	kawasaki_air
+	nakajima_air
+	mitsubishi_air
+	tachikawa_air
+	rikugun_air
+	kyushu_air
+	kawanishi_air
+	yokosuka_air
+	hiro_air
+	aichi_air
+	
+	## NAVAL
+	naval_equipment
+	naval_firecontrol
+	naval_engine
+	naval_antiair
+	naval_sub_equipment
+	naval_sub_design
+	naval_battery_dp
+	naval_battery_light
+	naval_battery_medium
+	naval_battery_heavy
+	naval_shell_design
+	tb_tech
+	de_tech
+	dd_tech
+	dl_tech
+	cm_tech
+	cl_tech
+	aacl_tech
+	ca_tech
+	cav_tech
+	cv_tech
+	cvb_tech
+	cve_tech
+	cvl_tech
+	fbb_tech
+	pbb_tech
+	bc_tech
+	bb_tech
+	bb_armor_scheme
+	bbv_tech
+	shbb_tech
+	ss_tech
+	pb_tech
+	tp_tech
+	marine_tech
+	asw_tech #DNM
+	asw_tech_dd
+	asw_tech_cl
+	asw_tech_ca
+	torpedo_equipment #DNM
+	naval_mines
+	naval_minesweeping
+	naval_minelaying
+	transport_tech
+	
+	## NAVAL AIR
+	naval_air
+	naval_bomber
+	
+	## DOCTRINES
+	land_doctrine
+	air_doctrine
+	ww1_doctrine
+	ww1_air_doctrine
+	naval_doctrine
+	naval_doctrine_capital
+	naval_doctrine_cruiser
+	naval_doctrine_destroyer
+	naval_doctrine_carrier
+	naval_doctrine_submarine
+	naval_doctrine_decisive_battle
+	naval_doctrine_fleet_in_being
+	naval_doctrine_trade_interdiction
+	naval_doctrine_convoy
+	naval_doctrine_fleet_train
+	naval_doctrine_mine_warfare
+	naval_doctrine_ww1
+	
+	cat_mobile_warfare
+	cat_superior_firepower
+	cat_grand_battle_plan
+	cat_mass_assault
+	cat_strategic_destruction
+	cat_battlefield_support
+	cat_operational_integrity
+	cat_guerilla_warfare
+	cat_decisive_battle
+	cat_assault_operations
+	cat_depth
+	cat_prepared_defense
+	cat_containment
+	cat_elastic_defence
+	cat_command
+	cat_operational_support
+	cat_brigade_doctrine
+	cat_defense_docs
+	cat_attack_docs
+}
+
+technology_folders = {
+	infantry_folder = {
+		ledger = army
+	}
+	infantry_overlay_folder = {
+		available = {
+			NOT = { has_country_flag = UNLOCK:infantry_folder }
+		}
+	}
+	support_folder = {
+		ledger = army
+	}
+	support_overlay_folder = { 
+		available = {
+			NOT = { has_country_flag = UNLOCK:support_folder }
+		}
+	}
+	tank_techs_folder = {
+		ledger = army
+	}
+	tank_techs_overlay_folder = {
+		available = {
+			NOT = { has_country_flag = UNLOCK:tank_techs_folder }
+		}
+	}
+	armour_folder = {
+		ledger = army
+		available = {
+			has_country_flag = allied_tanks
+			#NOT = {
+				#has_dlc = "No Step Back"
+			#}
+		}
+	}
+	armour_axis_folder = {
+		ledger = army
+		available = {
+			has_country_flag = axis_tanks
+			#NOT = {
+				#has_dlc = "No Step Back"
+			#}
+		}
+	}
+	armor_overlay_folder = {
+		available = {
+			NOT = { has_country_flag = UNLOCK:armor_folder }
+		}
+	}
+	artillery_folder = {
+		ledger = army
+	}
+	artillery_overlay_folder = {
+		available = {
+			NOT = { has_country_flag = UNLOCK:artillery_folder }
+		}
+	}
+	air_techs_folder = {
+		ledger = air
+		available = { 
+			#has_country_flag = GEN_air
+			NOT = {
+				has_country_flag = GER_air
+				has_country_flag = ITA_air
+				has_country_flag = JAP_air
+				has_country_flag = USA_air
+				has_country_flag = ENG_air
+				has_country_flag = FRA_air
+				has_country_flag = SOV_air
+			}
+		}
+	}
+	air_techs_overlay_folder = {
+		available = {
+			NOT = { has_country_flag = UNLOCK:air_techs_folder }
+			NOT = { has_country_flag = UNLOCK:air_techs_folder_army }
+			NOT = { has_country_flag = UNLOCK:air_techs_folder_navy }
+		}
+	}
+	legacy_ships_folder = {
+		ledger = navy
+		available = {
+			has_country_flag = coastal_state
+			#NOT = { has_global_flag = MTG  }
+			NOT = { major_country = yes }
+		}
+	}
+	naval_folder = {
+		ledger = navy
+		available = {
+			has_country_flag = coastal_state
+			NOT = { has_dlc = "Man the Guns" }
+		}
+	}
+	naval_overlay_folder = {
+		available = {
+			NOT = { has_country_flag = UNLOCK:naval_folder }
+		}
+	}
+	naval_techs_folder = {
+		ledger = navy
+		available = {
+			has_country_flag = coastal_state
+			NOT = { has_dlc = "Man the Guns" }
+		}
+	}
+	naval_techs_overlay_folder = {
+		available = {
+			NOT = { has_country_flag = UNLOCK:naval_techs_folder }
+		}
+	}
+	mtgnavalfolder = {	
+		ledger = navy								#generic tech tree
+		available = {
+			has_country_flag = coastal_state_MTG
+			#has_country_flag = coastal_state
+			#has_dlc = "Man the Guns"
+		}
+	}
+	mtg_navaltechs_folder = {								#generic tech tree
+		ledger = navy	
+		available = {
+			has_country_flag = coastal_state_MTG
+			#has_country_flag = coastal_state
+			#has_dlc = "Man the Guns"
+		}
+	}
+	industry_folder = {
+		ledger = civilian
+	}
+	industry_overlay_folder = { 
+		available = { 
+			NOT = { has_country_flag = UNLOCK:industry_folder }
+		}
+	}
+	raw_materials_folder = {
+		ledger = civilian
+	}
+	raw_materials_overlay_folder = { 
+		available = { 
+			NOT = { has_country_flag = UNLOCK:raw_materials_folder }
+		}
+	}
+	ww1_land_doctrine_folder = {
+		ledger = army
+		#doctrine = yes
+	}
+	ww1_land_doctrine_overlay_folder = { 
+		available = { 
+			NOT = { has_country_flag = UNLOCK:ww1_land_doctrine_folder }
+		}
+	}
+	land_doctrine_folder = {
+		ledger = army
+		#doctrine = yes
+	}
+	land_doctrine_overlay_folder = { 
+		available = { 
+			NOT = { has_country_flag = UNLOCK:land_doctrine_folder }
+		}
+	}
+	naval_doctrine_folder = {
+		ledger = navy
+		#doctrine = yes
+	}
+	naval_doctrine_overlay_folder = { 
+		available = { 
+			NOT = { has_country_flag = UNLOCK:naval_doctrine_folder }
+		}
+	}
+	air_doctrine_folder = { 
+		ledger = air
+		#doctrine = yes
+	}
+	air_doctrine_overlay_folder = { 
+		available = { 
+			NOT = { has_country_flag = UNLOCK:air_doctrine_folder }
+		}
+	}
+	electronics_folder = {
+		ledger = civilian
+	}
+	electronics_overlay_folder = { 
+		available = { 
+			NOT = { has_country_flag = UNLOCK:electronics_folder }
+			NOT = { has_country_flag = UNLOCK:nuclear_folder }
+		}
+	}
+	#secret_weapons_folder
+#### GER ####
+	trm_armour_ger_folder = { 
+		ledger = army
+		available = { 
+			has_country_flag = GER_armor
+			#NOT = {
+				#has_dlc = "No Step Back"
+			#}
+		}
+	}
+	luftwaffe_folder = { 
+		ledger = air
+		available = { 
+			has_country_flag = GER_air
+		}
+	}
+#### SOV ####
+	trm_armour_sov_folder = { 
+		ledger = army
+		available = { 
+			has_country_flag = SOV_armor
+			#NOT = {
+				#has_dlc = "No Step Back"
+			#}
+		}
+	}
+	sovietair_folder = { 
+		ledger = air
+		available = { 
+			has_country_flag = SOV_air
+		}
+	}
+#### ENG ####
+	trm_armour_eng_folder = { 
+		ledger = army
+		available = { 
+			has_country_flag = ENG_armor
+			NOT = {
+				#has_dlc = "No Step Back"
+			}
+		}
+	}
+	britishair_folder = { 
+		ledger = air
+		available = { 
+			has_country_flag = ENG_air
+		}
+	}
+	
+#### USA ####
+	trm_armour_usa_folder = { 
+		ledger = army
+		available = { 
+			has_country_flag = USA_armor
+			#NOT = {
+				#has_dlc = "No Step Back"
+			#}
+		}
+	}
+	usair_folder = {
+		ledger = air 
+		available = { 
+			has_country_flag = USA_air
+		}
+	}
+#### FRA ####
+	trm_armour_fra_folder = { 
+		ledger = army
+		available = { 
+			has_country_flag = FRA_armor
+			#NOT = {
+				#has_dlc = "No Step Back"
+			#}
+		}
+	}
+	frenchair_folder  = {
+		ledger = air
+		available = {
+			has_country_flag = FRA_air
+		}
+	}
+#### JAP ####
+	trm_armour_jap_folder = { 
+		ledger = army
+		available = {
+			has_country_flag = JAP_armor
+			#NOT = {
+				#has_dlc = "No Step Back"
+			#}
+		}
+	}
+	japanair_folder = {
+		ledger = air
+		available = { 
+			has_country_flag = JAP_air
+		}
+	}
+#### ITA ####
+	trm_armour_ita_folder = { 
+		ledger = army
+		available = { 
+			has_country_flag = ITA_armor
+			#NOT = {
+				#has_dlc = "No Step Back"
+			#}
+		}
+	}
+	italyair_folder = { 
+		ledger = air
+		available = { 
+			has_country_flag = ITA_air
+		}
+	}
+#### SWE ####
+	trm_armour_minor_swe_folder = { 
+		ledger = army
+		available = { 
+			has_country_flag = SWE_armor
+			#NOT = {
+				#has_dlc = "No Step Back"
+			#}
+		}
+	}
+#### CZE ####
+#	trm_armour_minor_cze_folder = { 
+#		ledger = army
+#		available = { 
+#			has_country_flag = CZE_armor
+#			#NOT = {
+#				#has_dlc = "No Step Back"
+#			#}
+#		}
+#	}
+#### HUN ####
+	trm_armour_minor_hun_folder = { 
+		ledger = army
+		available = { 
+			has_country_flag = HUN_armor
+			#NOT = {
+				#has_dlc = "No Step Back"
+			#}
+		}
+	}
+#### POL ####
+#	trm_armour_minor_pol_folder = { 
+#		ledger = army
+#		available = { 
+#			has_country_flag = POL_armor
+#			#NOT = {
+#				#has_dlc = "No Step Back"
+#			#}
+#		}
+#	}
+#### Generic ####
+#	trm_armour_minor_generic_folder = { 
+#		ledger = army
+#		available = { 
+#			has_country_flag = generic_armor
+#			#NOT = {
+#				#has_dlc = "No Step Back"
+#			#}
+#		}
+#	}
+}
+### EOF ###

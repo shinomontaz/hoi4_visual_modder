@@ -30,32 +30,87 @@
 - ❌ File serialization (writing back to .txt)
 
 ### Immediate Next Steps (Current Sprint)
-**Goal:** Refactor to country-centric architecture
+**Goal:** Enhance technology display with advanced features
 
-**ARCHITECTURE CHANGE:** Переход от file-centric к country-centric подходу.
-См. `_REFACTORING_PLAN.md` и `_DATA_STRUCTURE.md` для деталей.
+**CURRENT FOCUS:** Technology system improvements based on `HOI4_Technology_Advanced_Rules.md`
 
-**Sprint 1: Foundation (Current)**
-10. **Create ModDescriptor parser and validator**
-    - Parse .mod files to extract path variable
-    - Validate mod folder exists next to .mod file
-    - Extract mod metadata (name, version, tags)
-    
-11. **Create GameInstallation validator**
-    - Auto-detect HOI4 installation (already in IconLoader)
-    - Manual folder selection
-    - Validate hoi4.exe + folder structure
-    
-12. **Update StartupScene UI**
-    - File picker for .mod files
-    - Folder picker + Auto-detect button for game
-    - Display mod/game info after selection
-    - Transition to CountrySelectionScene
-    
-13. **Create AppConfig persistence**
-    - Save/load mod path, game path
-    - Save last selected country
-    - JSON config file
+**Sprint 5: Technology Display Enhancement (Current)**
+
+21. **Implement Country Flags System**
+    - **Goal:** Load and manage country flags for technology folder availability
+    - **Tasks:**
+      - Create `CountryFlagsParser` for `history/countries/*.txt`
+      - Parse `set_country_flag = FLAG_NAME` statements
+      - Store flags in `CountryContext`
+      - Add method `HasFlag(flagName string) bool`
+    - **Files:**
+      - `internal/parser/country_flags_parser.go` (new)
+      - `internal/app/country_context.go` (update)
+    - **Priority:** HIGH (required for folder filtering)
+
+22. **Implement Technology Folder Filtering**
+    - **Goal:** Show only available folders based on country flags and overlay logic
+    - **Tasks:**
+      - Parse `available = { ... }` conditions from technology_tags
+      - Implement condition evaluator (has_country_flag, NOT, etc.)
+      - Filter folders in `CountryContext.resolveTechFolders()`
+      - Hide overlay folders when conditions met
+    - **Files:**
+      - `internal/parser/technology_tags_parser.go` (update)
+      - `internal/app/country_context.go` (update)
+      - `internal/app/condition_evaluator.go` (new)
+    - **Priority:** HIGH (core functionality)
+
+23. **Implement Sub-tree Detection**
+    - **Goal:** Detect and display multiple technology sub-trees within one folder
+    - **Tasks:**
+      - Group technologies by X-coordinate ranges
+      - Detect sub-tree boundaries (gap > 5 units)
+      - Identify sub-trees by categories
+      - Add sub-tree metadata to TechnologyTree
+    - **Files:**
+      - `internal/domain/technology.go` (update)
+      - `internal/app/technology_loader.go` (update)
+    - **Priority:** MEDIUM (UX improvement)
+
+24. **Add Scrollable Technology List UI**
+    - **Goal:** Implement scrollable list for technology folders with proper UX
+    - **Tasks:**
+      - Create `ScrollableList` component
+      - Add mouse wheel scrolling
+      - Add scrollbar indicator
+      - Limit visible items (5-7 per page)
+      - Add "... X more" indicator
+    - **Files:**
+      - `internal/ui/components/scrollable_list.go` (new)
+      - `internal/ui/scenes/country_menu.go` (update)
+    - **Priority:** HIGH (usability)
+
+25. **Implement Technology Folder Editor UI**
+    - **Goal:** Create UI for managing country flags and folder availability
+    - **Tasks:**
+      - Add "Edit Flags" button in CountryMenuScene
+      - Create FlagEditorScene
+      - Display current flags
+      - Add/remove flags functionality
+      - Save changes to history file
+    - **Files:**
+      - `internal/ui/scenes/flag_editor.go` (new)
+      - `internal/ui/scenes/country_menu.go` (update)
+    - **Priority:** MEDIUM (future feature)
+
+**Sprint 1-4: Completed**
+10. ✅ Create ModDescriptor parser and validator
+11. ✅ Create GameInstallation validator
+12. ✅ Update StartupScene UI
+13. ✅ Create AppConfig persistence
+14. ✅ Create BookmarkParser
+15. ✅ Create CountrySelectionScene
+16. ✅ Create CountryContext and CountryMenuScene
+17. ✅ Create TechnologyTagsParser and TechnologyLoader
+18. ✅ Update TechViewerScene with tree support
+19. ✅ Implement LocalizationParser
+20. ✅ Optimize technology loading with caching
 
 **Sprint 2: Country Selection**
 14. **Create BookmarkParser**

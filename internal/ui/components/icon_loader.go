@@ -119,39 +119,32 @@ func (il *IconLoader) LoadFocusIcon(iconName string) *ebiten.Image {
 
 // loadIconFromFile attempts to load icon from various possible locations
 func (il *IconLoader) loadIconFromFile(iconName, category string) *ebiten.Image {
-	println("=== Loading icon:", iconName, "category:", category)
-	println("ModPath:", il.basePath)
-	println("GamePath:", il.gamePath)
-	
 	// First try mod folder
 	modPaths := []string{
 		filepath.Join(il.basePath, "gfx", "interface", category, iconName+".dds"),
 		filepath.Join(il.basePath, "gfx", "interface", category, iconName+".png"),
 	}
-	
+
 	for _, path := range modPaths {
 		if img := il.tryLoadImage(path); img != nil {
-			println("SUCCESS! Loaded from mod:", path)
 			return img
 		}
 	}
-	
+
 	// If not found in mod, try game folder (fallback)
 	if il.gamePath != "" {
 		gamePaths := []string{
 			filepath.Join(il.gamePath, "gfx", "interface", category, iconName+".dds"),
 			filepath.Join(il.gamePath, "gfx", "interface", category, iconName+".png"),
 		}
-		
+
 		for _, path := range gamePaths {
 			if img := il.tryLoadImage(path); img != nil {
-				println("SUCCESS! Loaded from game:", path)
 				return img
 			}
 		}
 	}
-	
-	println("NOT FOUND! Using placeholder for:", iconName)
+
 	// Icon not found, return placeholder
 	return il.placeholder
 }
@@ -162,16 +155,16 @@ func (il *IconLoader) tryLoadImage(path string) *ebiten.Image {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return nil
 	}
-	
+
 	// Read file
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil
 	}
-	
+
 	// Try to decode based on extension
 	ext := filepath.Ext(path)
-	
+
 	var img image.Image
 	switch ext {
 	case ".dds":
@@ -181,22 +174,22 @@ func (il *IconLoader) tryLoadImage(path string) *ebiten.Image {
 			// DDS decode failed, return nil
 			return nil
 		}
-		
+
 	case ".png", ".jpg", ".jpeg":
 		img, _, err = image.Decode(bytes.NewReader(data))
 		if err != nil {
 			return nil
 		}
-		
+
 	default:
 		return nil
 	}
-	
+
 	// Convert to ebiten image
 	if img != nil {
 		return ebiten.NewImageFromImage(img)
 	}
-	
+
 	return nil
 }
 
